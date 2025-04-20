@@ -39,6 +39,7 @@ data4 = (Agent("Robert", Condition.SICK),)
 data5 = ()
 
 
+
 def test_data0():
     code_result = set(meetup(data0))
     true_result = {
@@ -53,6 +54,8 @@ def test_data0():
         Agent(name="Emma", category=Condition.HEALTHY),
         Agent(name="Vaccine", category=Condition.DYING),
     }
+
+
     assert code_result == true_result
 
 
@@ -72,6 +75,7 @@ def test_data2():
         Agent("Zelda4", Condition.DEAD),
         Agent("Zelda5", Condition.HEALTHY),
     }
+
     assert code_result == true_result
 
 

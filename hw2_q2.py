@@ -23,66 +23,53 @@ def worsen(condition):
     return condition
 
 def meetup(agent_listing: tuple) -> list:
-    """Model the outcome of the meetings of pairs of agents.
+    """Model the outcome of the meetings of pairs of agents."""
+    # Step 1: Create a mutable version of the input
+    updated_agents = {agent.name: agent for agent in agent_listing}
 
-    The pairs of agents are ((a[0], a[1]), (a[2], a[3]), ...). If there's an uneven
-    number of agents, the last agent will remain the same.
+    # Step 2: Remove agents who don’t meet
+    meeting_agents = [agent for agent in agent_listing if agent.category not in (Condition.HEALTHY, Condition.DEAD)]
 
-    Parameters
-    ----------
-    agent_listing : tuple of Agent
-        A listing (tuple in this case) in which each element is of the Agent type, 
-        containing a 'name' field and a 'category' field, with 'category' being 
-        of the type Condition.
+    # Step 3: Pair the meeting agents
+    for i in range(0, len(meeting_agents) - 1, 2):
+        a1 = meeting_agents[i]
+        a2 = meeting_agents[i + 1]
 
-    Returns
-    -------
-    updated_listing : list
-        A list of Agents with their 'category' field changed according to the result of the meeting.
-    """
-    updated_agents = list(agent_listing)
-
-    for i, (a1, a2) in enumerate(zip_longest(agent_listing[::2], agent_listing[1::2])):
-        if a2 is None:
-            continue  # Odd number of agents, last one stays unchanged
-
-        if a1.category in (Condition.HEALTHY, Condition.DEAD) or a2.category in (Condition.HEALTHY, Condition.DEAD):
-            continue  # Healthy and Dead agents do not participate
-
-        # If one is Cure, try to improve the other
+        # Cure logic
         if a1.category == Condition.CURE and a2.category != Condition.CURE:
-            updated_agents[2*i+1] = Agent(a2.name, improve(a2.category))
-            continue
+            updated_agents[a2.name] = Agent(a2.name, improve(a2.category))
         elif a2.category == Condition.CURE and a1.category != Condition.CURE:
-            updated_agents[2*i] = Agent(a1.name, improve(a1.category))
-            continue
+            updated_agents[a1.name] = Agent(a1.name, improve(a1.category))
         elif a1.category == Condition.CURE and a2.category == Condition.CURE:
-            continue  # Cure does not affect another Cure
-
-        # If both are Dying, both become Dead
-        if a1.category == Condition.DYING and a2.category == Condition.DYING:
-            updated_agents[2*i] = Agent(a1.name, Condition.DEAD)
-            updated_agents[2*i+1] = Agent(a2.name, Condition.DEAD)
+            pass
         else:
-            # Infected agents worsen each other
-            updated_agents[2*i] = Agent(a1.name, worsen(a1.category))
-            updated_agents[2*i+1] = Agent(a2.name, worsen(a2.category))
+            # Both Dying
+            if a1.category == Condition.DYING and a2.category == Condition.DYING:
+                updated_agents[a1.name] = Agent(a1.name, Condition.DEAD)
+                updated_agents[a2.name] = Agent(a2.name, Condition.DEAD)
+            else:
+                # Worsen each other
+                updated_agents[a1.name] = Agent(a1.name, worsen(a1.category))
+                updated_agents[a2.name] = Agent(a2.name, worsen(a2.category))
 
-    return updated_agents
+    # Return a list in the original order
+    return [updated_agents[agent.name] for agent in agent_listing]
 
-if __name__ == "__main__":
-    # Sample test for Question 2
-    agent_list = (
-        Agent("Alice", Condition.SICK),
-        Agent("Bob", Condition.DYING),
-        Agent("Curey", Condition.CURE),
-        Agent("Dana", Condition.DYING),
-        Agent("Eli", Condition.HEALTHY),
-        Agent("Zoe", Condition.DEAD),
-    )
 
-    result = meetup(agent_list)
-    print("Question 2 solution:")
-    for agent in result:
-        print(f"{agent.name}: {agent.category.name}")
+
+# Optional testing block (only runs when running this file directly)
+# if __name__ == "__main__":
+#     agent_list = (
+#         Agent("Alice", Condition.SICK),
+#         Agent("Bob", Condition.DYING),
+#         Agent("Curey", Condition.CURE),
+#         Agent("Dana", Condition.DYING),
+#         Agent("Eli", Condition.HEALTHY),
+#         Agent("Zoe", Condition.DEAD),
+#     )
+#     result = meetup(agent_list)
+#     print("Question 2 solution:")
+#     for agent in result:
+#         print(f"{agent.name}: {agent.category.name}")
+
 
